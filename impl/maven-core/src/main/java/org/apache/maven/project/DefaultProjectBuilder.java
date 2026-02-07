@@ -655,7 +655,6 @@ public class DefaultProjectBuilder implements ProjectBuilder {
             // only set those on 2nd phase, ignore on 1st pass
             if (project.getFile() != null) {
                 Build build = project.getBuild().getDelegate();
-                List<org.apache.maven.api.model.Source> sources = build.getSources();
                 Path baseDir = project.getBaseDirectory();
                 Function<ProjectScope, String> outputDirectory = (scope) -> {
                     if (scope == ProjectScope.MAIN) {
@@ -666,23 +665,11 @@ public class DefaultProjectBuilder implements ProjectBuilder {
                         return build.getDirectory();
                     }
                 };
-                // Extract modules from sources to detect modular projects
-                Set<String> modules = extractModules(sources);
-                boolean isModularProject = !modules.isEmpty();
-
-                logger.trace(
-                        "Module detection for project {}: found {} module(s) {} - modular project: {}.",
-                        project.getId(),
-                        modules.size(),
-                        modules,
-                        isModularProject);
-
                 // Create source handling context for unified tracking of all lang/scope combinations
-                SourceHandlingContext sourceContext =
-                        new SourceHandlingContext(project, baseDir, modules, isModularProject, result);
+                final SourceHandlingContext sourceContext = new SourceHandlingContext(project, baseDir, result);
 
                 // Process all sources, tracking enabled ones and detecting duplicates
-                for (var source : sources) {
+                for (org.apache.maven.api.model.Source source : sourceContext.sources) {
                     var sourceRoot = DefaultSourceRoot.fromModel(session, baseDir, outputDirectory, source);
                     // Track enabled sources for duplicate detection and hasSources() queries
                     // Only add source if it's not a duplicate enabled source (first enabled wins)
@@ -705,7 +692,7 @@ public class DefaultProjectBuilder implements ProjectBuilder {
                 if (!sourceContext.hasSources(Language.SCRIPT, ProjectScope.MAIN)) {
                     project.addScriptSourceRoot(build.getScriptSourceDirectory());
                 }
-                if (isModularProject) {
+                if (sourceContext.useModuleSourceHierarchy()) {
                     // Modular projects: unconditionally ignore legacy directories, warn if explicitly set
                     warnIfExplicitLegacyDirectory(
                             build.getSourceDirectory(),
@@ -1169,22 +1156,6 @@ public class DefaultProjectBuilder implements ProjectBuilder {
             }
             return delegate.entrySet();
         }
-    }
-
-    /**
-     * Extracts unique module names from the given list of source elements.
-     * A project is considered modular if it has at least one module name.
-     *
-     * @param sources list of source elements from the build
-     * @return set of non-blank module names
-     */
-    private static Set<String> extractModules(List<org.apache.maven.api.model.Source> sources) {
-        return sources.stream()
-                .map(org.apache.maven.api.model.Source::getModule)
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isBlank())
-                .collect(Collectors.toSet());
     }
 
     private Model injectLifecycleBindings(

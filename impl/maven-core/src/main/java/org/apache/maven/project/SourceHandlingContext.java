@@ -37,9 +37,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Handles source configuration for Maven projects with unified tracking for all language/scope combinations.
- * <p>
- * This class replaces the previous approach of hardcoded boolean flags (hasMain, hasTest, etc.)
- * with a flexible set-based tracking mechanism that works for any language and scope combination.
+ * This class uses a flexible set-based tracking mechanism that works for any language and scope combination.
  * <p>
  * Key features:
  * <ul>
@@ -51,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 4.0.0
  */
-class SourceHandlingContext {
+final class SourceHandlingContext extends ProjectSourcesHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SourceHandlingContext.class);
 
@@ -67,19 +65,30 @@ class SourceHandlingContext {
     private final ModelBuilderResult result;
     private final Set<SourceKey> declaredSources;
 
-    SourceHandlingContext(
-            MavenProject project,
-            Path baseDir,
-            Set<String> modules,
-            boolean modularProject,
-            ModelBuilderResult result) {
+    SourceHandlingContext(MavenProject project, Path baseDir, ModelBuilderResult result) {
+        super(project);
         this.project = project;
         this.baseDir = baseDir;
-        this.modules = modules;
-        this.modularProject = modularProject;
+        this.modules = getModuleNames();
+        this.modularProject = !modules.isEmpty();
         this.result = result;
         // Each module typically has main, test, main resources, test resources = 4 sources
         this.declaredSources = new HashSet<>(4 * modules.size());
+        LOGGER.trace(
+                "Module detection for project {}: found {} module(s) {} - modular project: {}.",
+                project.getId(),
+                modules.size(),
+                modules,
+                modularProject);
+    }
+
+    /**
+     * Whether the project uses module source hierarchy.
+     * Overridden for returning the cached value.
+     */
+    @Override
+    public boolean useModuleSourceHierarchy() {
+        return modularProject;
     }
 
     /**
