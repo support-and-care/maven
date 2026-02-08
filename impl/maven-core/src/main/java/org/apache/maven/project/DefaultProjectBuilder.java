@@ -687,7 +687,7 @@ public class DefaultProjectBuilder implements ProjectBuilder {
                  *
                  * Additionally, for modular projects, legacy directories are unconditionally
                  * rejected because it is not clear how to dispatch their content between
-                 * different modules. A warning is emitted if these properties are explicitly set.
+                 * different modules. The build fails if these properties are explicitly set.
                  */
                 if (!sourceContext.hasSources(Language.SCRIPT, ProjectScope.MAIN)) {
                     project.addScriptSourceRoot(build.getScriptSourceDirectory());
@@ -900,7 +900,7 @@ public class DefaultProjectBuilder implements ProjectBuilder {
          *   <li><b>Configuration presence</b>: an explicit configuration differs from the default</li>
          *   <li><b>Physical presence</b>: the default directory exists on the filesystem</li>
          * </ul>
-         * In both cases, the legacy directory conflicts with modular sources and must not be used.
+         * In both cases, the legacy directory conflicts with modular sources and cannot be used.
          * Failing the build forces the user to resolve the conflict explicitly.
          */
         private void failIfLegacyDirectoryPresent(
@@ -915,7 +915,7 @@ public class DefaultProjectBuilder implements ProjectBuilder {
                 if (!configuredPath.equals(defaultPath)) {
                     // Configuration presence: explicit config differs from default
                     String message = String.format(
-                            "Legacy %s must not be used in modular project %s."
+                            "Legacy %s cannot be used in modular project %s."
                                     + "In modular projects, source directories must be defined via <sources> "
                                     + "with a module element for each module.",
                             elementName, projectId);
@@ -926,7 +926,7 @@ public class DefaultProjectBuilder implements ProjectBuilder {
                 } else if (Files.isDirectory(defaultPath)) {
                     // Physical presence: default directory exists on filesystem
                     String message = String.format(
-                            "Legacy %s '%s' exists but must not be used in modular project %s. "
+                            "Legacy %s '%s' exists but cannot be used in modular project %s."
                                     + "In modular projects, source directories must be defined via <sources>.",
                             elementName, defaultPath, projectId);
                     logger.error(message);

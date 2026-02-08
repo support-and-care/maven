@@ -231,7 +231,7 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
                 // Modular project with resources configured via <sources> - already added above
                 if (hasExplicitLegacyResources(resources, scopeId)) {
                     String message = String.format(
-                            "Legacy %s element must not be used because %s resources are configured via %s in <sources>.",
+                            "Legacy %s element cannot be used because %s resources are configured via %s in <sources>.",
                             legacyElement, scopeId, sourcesConfig);
                     LOGGER.error(message);
                     result.getProblemCollector()
@@ -253,7 +253,7 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
                 // Modular project without resources in <sources> - inject module-aware defaults
                 if (hasExplicitLegacyResources(resources, scopeId)) {
                     String message = "Legacy " + legacyElement
-                            + " element must not be used because modular sources are configured. "
+                            + " element cannot be used because modular sources are configured. "
                             + "Use " + sourcesConfig + " in <sources> for custom resource paths.";
                     LOGGER.error(message);
                     result.getProblemCollector()
@@ -283,7 +283,7 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
                 // Resources configured via <sources> - already added above
                 if (hasExplicitLegacyResources(resources, scopeId)) {
                     String message = String.format(
-                            "Legacy %s element must not be used because %s resources are configured via %s in <sources>.",
+                            "Legacy %s element cannot be used because %s resources are configured via %s in <sources>.",
                             legacyElement, scopeId, sourcesConfig);
                     LOGGER.error(message);
                     result.getProblemCollector()
