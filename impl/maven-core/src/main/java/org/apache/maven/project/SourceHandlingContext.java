@@ -161,7 +161,7 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
     }
 
     /**
-     * Validates that a project does not mix modular and classic (non-modular) sources.
+     * Fails the build if modular and classic (non-modular) sources are mixed within {@code <sources>}.
      * <p>
      * A project must be either fully modular (all sources have a module) or fully classic
      * (no sources have a module). Mixing modular and non-modular sources within the same
@@ -170,7 +170,7 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
      * This validation checks each (language, scope) combination and reports an ERROR if
      * both modular and non-modular sources are found.
      */
-    void validateNoMixedModularAndClassicSources() {
+    void failIfMixedModularAndClassicSources() {
         for (ProjectScope scope : List.of(ProjectScope.MAIN, ProjectScope.TEST)) {
             for (Language language : List.of(Language.JAVA_FAMILY, Language.RESOURCES)) {
                 boolean hasModular = declaredSources.stream()
@@ -209,6 +209,8 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
      *   <li>Modular project: use resources from {@code <sources>} if present, otherwise inject defaults</li>
      *   <li>Classic project: use resources from {@code <sources>} if present, otherwise use legacy resources</li>
      * </ol>
+     * <p>
+     * The error behavior for conflicting legacy configuration is consistent with source directory handling.
      *
      * @param scope the project scope (MAIN or TEST)
      */
