@@ -378,7 +378,7 @@ class DefaultConsumerPomBuilder implements PomBuilder {
         var sources = new ProjectSourcesHelper(project);
         if (sources.useModuleSourceHierarchy()) {
             // Dependencies are dispatched by maven-jar-plugin in the POM generated for each module.
-            model = model.withDependencies(null);
+            model = model.withDependencies(null).withPackaging(POM_PACKAGING);
         }
         if (!preserveModelVersion) {
             /*
