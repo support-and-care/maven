@@ -713,7 +713,7 @@ public class DefaultProjectBuilder implements ProjectBuilder {
                         project.addScriptSourceRoot(build.getScriptSourceDirectory());
                     }
 
-                    if (sourceContext.useModuleSourceHierarchy()) {
+                    if (sourceContext.isModularProject()) {
                         // Modular: reject ALL legacy directory configurations
                         failIfLegacyDirectoryPresent(
                                 build.getSourceDirectory(),

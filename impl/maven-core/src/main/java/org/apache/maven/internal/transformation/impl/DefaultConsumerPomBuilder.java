@@ -51,10 +51,12 @@ import org.apache.maven.api.services.model.LifecycleBindingsInjector;
 import org.apache.maven.impl.InternalSession;
 import org.apache.maven.model.v4.MavenModelVersion;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectSourcesHelper;
 import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.maven.project.SourceQueries.hasEnabledSources;
+import static org.apache.maven.project.SourceQueries.usesModuleSourceHierarchy;
 
 /**
  * Builds consumer POMs from project models, transforming them into a format suitable for downstream consumers.
@@ -375,8 +377,8 @@ class DefaultConsumerPomBuilder implements PomBuilder {
         if (parent != null) {
             model = model.withParent(parent.withRelativePath(null));
         }
-        var sources = new ProjectSourcesHelper(project);
-        if (sources.useModuleSourceHierarchy()) {
+        var projectSources = project.getBuild().getDelegate().getSources();
+        if (usesModuleSourceHierarchy(projectSources)) {
             // Dependencies are dispatched by maven-jar-plugin in the POM generated for each module.
             model = model.withDependencies(null).withPackaging(POM_PACKAGING);
         }
@@ -387,7 +389,7 @@ class DefaultConsumerPomBuilder implements PomBuilder {
              * build without sources does not mean much. Reminder: this removal can be disabled by setting
              * the `preserveModelVersion` XML attribute or `preserve.model.version` property to true.
              */
-            if (sources.hasEnabledSources()) {
+            if (hasEnabledSources(projectSources)) {
                 model = model.withBuild(null);
             }
             model = model.withPreserveModelVersion(false);

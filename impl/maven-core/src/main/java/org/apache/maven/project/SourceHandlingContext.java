@@ -35,6 +35,8 @@ import org.apache.maven.impl.model.DefaultModelProblem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.maven.project.SourceQueries.getModuleNames;
+
 /**
  * Handles source configuration for Maven projects with unified tracking for all language/scope combinations.
  * This class uses a flexible set-based tracking mechanism that works for any language and scope combination.
@@ -49,7 +51,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 4.0.0
  */
-final class SourceHandlingContext extends ProjectSourcesHelper {
+final class SourceHandlingContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SourceHandlingContext.class);
 
@@ -66,10 +68,9 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
     private final Set<SourceKey> declaredSources;
 
     SourceHandlingContext(MavenProject project, Path baseDir, ModelBuilderResult result) {
-        super(project);
         this.project = project;
         this.baseDir = baseDir;
-        this.modules = getModuleNames();
+        this.modules = getModuleNames(project.getBuild().getDelegate().getSources());
         this.modularProject = !modules.isEmpty();
         this.result = result;
         // Each module typically has main, test, main resources, test resources = 4 sources
@@ -84,10 +85,8 @@ final class SourceHandlingContext extends ProjectSourcesHelper {
 
     /**
      * Whether the project uses module source hierarchy.
-     * Overridden for returning the cached value.
      */
-    @Override
-    public boolean useModuleSourceHierarchy() {
+    boolean isModularProject() {
         return modularProject;
     }
 
